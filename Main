@@ -1,0 +1,225 @@
+//motor drivers
+int W1 = 12;
+int W2 = 11;
+int N3 = 10;
+int N4 = 9;
+int E1 = 4;
+int E2 = 3;
+int S3 = 6;
+int S4 = 5;
+//Digital
+int wENA = 13;
+int nENB = 8;
+int eENA = 2;
+int sENB = 7;
+//Light Sensor 1
+int L0 = 18;
+int L1 = 17;
+int L2 = 15;
+int L3 = 16;
+int sensorOut1 = 14;
+//light sensor 2
+int L02 = 23;
+int L12 = 22;
+int L22 = 20;
+int L32 = 21;
+int sensorOut2 = 19;
+//light sensor 3
+int L03 = 27;
+int L13 = 28;
+int L23 = 25;
+int L33 = 26;
+int sensorOut3 = 24;
+//led pin
+int ledPin = 49;
+//sensor values
+int LSensor1 = 0;
+int LSensor2 = 0;
+int LSensor3 = 0;
+//sensor delay to prevent going over line
+int sensordelay = 0;
+//variables for calibration
+int RF = 0;
+int R1;
+int R2;
+int R3;
+//final calibrated values
+int x1 = 100;   // light sensor difference value
+int x2 = 75;   // light sensor difference value
+int x3 = 100;   // light sensor difference value
+
+void setup() {
+
+
+
+  for (int output = 2; output < 35; output++) {
+    pinMode(output, OUTPUT);
+  }
+
+  pinMode(sensorOut1, INPUT);
+  pinMode(sensorOut2, INPUT);
+  pinMode(sensorOut3, INPUT);
+
+  digitalWrite(L0, HIGH);
+  digitalWrite(L1, LOW);
+  digitalWrite(L02, HIGH);
+  digitalWrite(L12, LOW);
+  digitalWrite(L03, HIGH);
+  digitalWrite(L13, LOW);
+  Serial.begin(9600);
+
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, HIGH);
+  calibrate();
+  digitalWrite(ledPin, LOW);
+  delay (2000);
+  Serial.println(x1);
+  Serial.println(x2);
+  Serial.println(x3);
+}
+void loop() {
+  digitalWrite(ledPin, HIGH);
+  delay(1000);
+  digitalWrite(ledPin, LOW);
+  delay(1000);
+  lightsensorsetup();
+  sensorprint();
+  sensor();
+}
+void lightsensorsetup() {
+  digitalWrite(L2, HIGH);
+  digitalWrite(L3, HIGH);
+  digitalWrite(L22, HIGH);
+  digitalWrite(L32, HIGH);
+  digitalWrite(L23, HIGH);
+  digitalWrite(L33, HIGH);
+}
+void north() {
+
+  analogWrite(wENA, 130);
+  digitalWrite(W1, HIGH);
+  digitalWrite(W2, LOW);
+
+  analogWrite(nENB, 130);
+  digitalWrite(N3, LOW);
+  digitalWrite(N4, LOW);
+
+  analogWrite(sENB, 130);
+  digitalWrite(S3, LOW);
+  digitalWrite(S4, LOW);
+
+  analogWrite(eENA, 130);
+  digitalWrite(E1, LOW);
+  digitalWrite(E2, HIGH);
+}
+
+void south() {
+  analogWrite(wENA, 130);
+  digitalWrite(W1, LOW);
+  digitalWrite(W2, HIGH);
+
+  analogWrite(nENB, 130);
+  digitalWrite(N3, LOW);
+  digitalWrite(N4, LOW);
+
+  analogWrite(sENB, 130);
+  digitalWrite(S3, LOW);
+  digitalWrite(S4, LOW);
+
+  analogWrite(eENA, 130);
+  digitalWrite(E1, HIGH);
+  digitalWrite(E2, LOW);
+
+}
+void east() {
+  analogWrite(wENA, 130);
+  digitalWrite(W1, LOW);
+  digitalWrite(W2, LOW);
+
+  analogWrite(nENB, 130);
+  digitalWrite(N3, HIGH);
+  digitalWrite(N4, LOW);
+
+  analogWrite(sENB, 130);
+  digitalWrite(S3, LOW);
+  digitalWrite(S4, HIGH);
+
+  analogWrite(eENA, 130);
+  digitalWrite(E1, LOW);
+  digitalWrite(E2, LOW);
+}
+void west() {
+  analogWrite(wENA, 130);
+  digitalWrite(W1, LOW);
+  digitalWrite(W2, HIGH);
+
+  analogWrite(nENB, 130);
+  digitalWrite(N3, LOW);
+  digitalWrite(N4, HIGH);
+
+  analogWrite(sENB, 130);
+  digitalWrite(S3, HIGH);
+  digitalWrite(S4, LOW);
+
+  analogWrite(eENA, 130);
+  digitalWrite(E1, HIGH);
+  digitalWrite(E2, LOW);
+
+}
+void sensorprint() {
+  LSensor1 = pulseIn(sensorOut1, LOW);
+  Serial.print ("Sensor1");
+  Serial.print(":");
+  Serial.println(LSensor1);
+  delay(300);
+  LSensor2 = pulseIn(sensorOut2, LOW);
+  Serial.print ("Sensor2");
+  Serial.print(":");
+  Serial.println(LSensor2);
+  delay(300);
+  LSensor3 = pulseIn(sensorOut3, LOW);
+  Serial.print ("Sensor3");
+  Serial.print(":");
+  Serial.println(LSensor3);
+  delay(300);
+}
+void sensor() {
+  if (sensordelay = 1) {
+    if (LSensor1 < x1) {
+      north();
+      sensordelay = 0;
+      delay(500);
+      sensordelay = 1;
+    }
+    if (LSensor2 < x2) {
+      north();
+      sensordelay = 0;
+      delay(500);
+      sensordelay = 1;
+    }
+    if (LSensor3 < x3) {
+      south();
+      sensordelay = 0;
+      delay(500);
+      sensordelay = 1;
+    }
+  }
+}
+void calibrate() {
+
+  for (int C = 1; C < 5; C++) {
+    R1 = pulseIn(sensorOut3, LOW);
+    x1 = x1 + R1;
+  }
+  x1 = x1 / 5;
+  for (int C1 = 1; C1 < 5; C1++) {
+    R2 = pulseIn(sensorOut3, LOW);
+    x2 = x2 + R2;
+  }
+  x2 = x2 / 5;
+  for (int C11 = 1; C11 < 5; C11++) {
+    R3 = pulseIn(sensorOut3, LOW);
+    x3 = x3 + R3;
+  }
+  x3 = x3 / 5;
+}
